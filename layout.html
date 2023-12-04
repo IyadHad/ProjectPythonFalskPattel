@@ -1,51 +1,64 @@
 <!DOCTYPE html>
 <html>
+<html lang="en"></html>
 <head>
-    <link rel="stylesheet" type="text/css" href="css_styles/styleContaineur.css">
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Banking Aplication</title>
-    <environment include="Development">
-        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
-        <link rel="stylesheet" href="css_styles/styleContaineur.css" />
-    </environment>
-    <environment exclude="Development">
-        <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css"
-              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
-              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
-        <link rel="stylesheet" href="css_styles/styleContaineur.css" asp-append-version="true" />
-    </environment>
+    <link rel="stylesheet" type ="text/css", href="/css_styles/styleContaineur.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
 
-    
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .content {
+            display: flex;
+            flex: 1;
+        }
+
+        .box1, .box2 {
+            padding: 20px;
+            margin: 10px;
+            border: 1px solid #fff;
+            flex: 1;
+        }
+
+        .box1 {
+            order: 2;
+            background-image: url("C:/Users/ihadi/OneDrive/Desktop/cours iralnde/Python/FinalProjectPython/ProjectTemplate/imagesBankerImage.jpg");
+        }
+
+        .box2 {
+            order: 1;
+            background-image: url("C:/Users/ihadi/OneDrive/Desktop/cours iralnde/Python/FinalProjectPython/ProjectTemplate/imagesCustomerImage.jpg");
+        }
+
+        footer {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
+    <header>
+        <h1>Mon Header</h1>
+        <!-- Ajoutez d'autres éléments de l'en-tête ici -->
+    </header>
     {%block content%}
     {%endblock%}
-    <partial name="_CookieConsentPartial" />
-    <div class="container body-content">
-        <hr />
-        <footer>
-            <p>&copy; Banking application</p>
-        </footer>
-    </div>
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a asp-page="/Index" class="navbar-brand">Banking application</a>
-            </div>
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    <li><a href="/Home">Home</a></li>
-                    <li><a href="/About">About</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
 </body>
 </html>

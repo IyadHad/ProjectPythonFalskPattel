@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for,request
+from flask import Flask, render_template, url_for,request,redirect,flash
 import os
 
 app = Flask(__name__,template_folder='ProjectTemplate')
@@ -14,9 +14,25 @@ def HomePage():
     return render_template('Home.html', user_image1= Flask_Logo1, user_image2 = Flask_Logo2)
 
 @app.route("/")
-@app.route("/About")
+@app.route("/about")
 def AboutPage():
     return render_template('about.html')
+
+@app.route("/")
+@app.route("/notes")
+def TestPage():
+    return render_template('notes.html')
+
+@app.route("/")
+@app.route("/login")
+def LoginCustomerPage():
+    return render_template('loginCustomer.html')
+
+@app.route("/")
+@app.route("/bankerLog")
+def LoginBankerPage():
+    return render_template('loginBanker.html')
+
 
 if __name__ == '__main__':
 	app.run(debug=True)
