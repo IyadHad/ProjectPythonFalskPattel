@@ -1,11 +1,17 @@
 from flask import Flask, render_template, url_for,request
+import os
 
 app = Flask(__name__,template_folder='ProjectTemplate')
+
+IMG_FOLDER = os.path.join("images")
+app.config["images"] = IMG_FOLDER
 
 @app.route("/")
 @app.route("/Home")
 def HomePage():
-    return render_template('Home.html')
+    Flask_Logo1 = os.path.join(app.config["images"], "BankerImage.jpg")
+    Flask_Logo2 = os.path.join(app.config["images"], "CustomerImage.jpg")
+    return render_template('Home.html', user_image1= Flask_Logo1, user_image2 = Flask_Logo2)
 
 @app.route("/")
 @app.route("/About")
