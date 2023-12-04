@@ -23,10 +23,18 @@ def AboutPage():
 def TestPage():
     return render_template('notes.html')
 
-@app.route("/")
-@app.route("/login")
-def LoginCustomerPage():
-    return render_template('loginCustomer.html')
+@app.route("/register", methods=['GET', 'POST'])
+def register():
+    reg_form = RegistrationForm()
+    if reg_form.validate_on_submit():
+        flash(f'Account created for {reg_form.username.data}!', 'success')
+        return redirect(url_for('HomePage'))
+    return render_template('register.html', title='Register', form=reg_form)
+
+@app.route("/login", methods=['GET', 'POST'])
+def login():
+    log_form = LoginForm()
+    return render_template('login.html', title='Login Customer', form=log_form)
 
 @app.route("/")
 @app.route("/bankerLog")
