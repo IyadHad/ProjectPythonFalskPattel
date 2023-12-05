@@ -1,7 +1,12 @@
 from flask import Flask, render_template, url_for,request,redirect,flash
+from form import RegistrationForm,LoginForm, BankerlogForm
 import os
-
+import pandas as pd
+alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
 app = Flask(__name__,template_folder='ProjectTemplate')
+import secrets
+a = str(secrets.token_hex(16))
+app.config['SECRET_KEY']=a
 
 IMG_FOLDER = os.path.join("images")
 app.config["images"] = IMG_FOLDER
@@ -23,12 +28,55 @@ def AboutPage():
 def TestPage():
     return render_template('notes.html')
 
+def save_to_file(first_name, last_name, email,password):
+    file_path = 'FinalProjectPython\PoubelleDepatel\customer.txt'
+    if not os.path.exists(file_path):
+        with open(file_path, 'w'):
+            pass
+    with open(file_path, 'a') as file:
+        file.write(f'{first_name}, {last_name}, {email},{password}\n')
+
+def Find_file_name(first_name,last_name):
+    count=1
+    countf1=0
+    countf2=0
+    for i in alphabet:
+        if str.upper(first_name[0]) == i:
+            countf1=count
+        if str.upper(last_name[0]) == i:
+            countf2=count
+        count+=1
+        return f"{str.upper(first_name[0])}{str.upper(last_name[0])}-{len(first_name)+len(last_name)}-{countf1}-{countf2}.txt"
+
+def Create_Perso_File_Customer(first_name, last_name, email,password):
+    count=1
+    countf1=0
+    countf2=0
+    for i in alphabet:
+        if str.upper(first_name[0]) == i:
+            countf1=count
+        if str.upper(last_name[0]) == i:
+            countf2=count
+        count+=1
+    file_path = f'FinalProjectPython\PoubelleDepatel\{str.upper(first_name[0])}{str.upper(last_name[0])}-{len(first_name)+len(last_name)}-{countf1}-{countf2}.txt'
+    if not os.path.exists(file_path):
+        with open(file_path, 'w'):
+            pass
+        with open(file_path, 'a') as file:
+            file.write(f'{first_name}, {last_name}, {email}, {password};\n')
+
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     reg_form = RegistrationForm()
-    if reg_form.validate_on_submit():
-        flash(f'Account created for {reg_form.username.data}!', 'success')
-        return redirect(url_for('HomePage'))
+    if reg_form.validate_on_submit() and request.method == 'POST':
+        first_name = request.form.get('first_name')
+        last_name = request.form.get('last_name')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        save_to_file(first_name, last_name, email,password)	
+        Create_Perso_File_Customer(first_name, last_name, email,password)
+        flash(f'Account created for {reg_form.first_name.data}!', 'success')
+        return redirect(url_for('CustomerviewPage'))
     return render_template('register.html', title='Register', form=reg_form)
 
 @app.route("/login", methods=['GET', 'POST'])
@@ -37,15 +85,32 @@ def login():
     if log_form.validate_on_submit():
         if log_form.email.data == 'admin@blog.com' and log_form.password.data == 'password':
             flash('You have been logged in!', 'success')
-            return redirect(url_for('HomePage'))
+            return redirect(url_for('CustomerviewPage'))
         else:
             flash('Login Unsuccessful. Please check username and password.', 'danger')
-    return render_template('login.html', title='Login Customer', form=log_form)
+    return render_template('loginCustomer.html', title='Login Customer', form=log_form)
 
 @app.route("/")
-@app.route("/bankerLog")
+@app.route("/bankerLog",methods=['GET', 'POST'])
 def LoginBankerPage():
-    return render_template('loginBanker.html')
+    bankerform = BankerlogForm()
+    if bankerform.submit.data==True:
+        if bankerform.password.data == 'A1234':
+            flash('You have been logged in the bank interface!', 'success')
+            return redirect(url_for('BankerviewPage'))
+        else :
+            flash('Login Unsuccessful. Please check username and password.', 'danger')
+    return render_template('loginBanker.html',title='Login Banker',form=bankerform)
+
+@app.route("/")
+@app.route('/bankerview')
+def BankerviewPage():
+    return render_template('BankerView.html')
+
+@app.route("/")
+@app.route('/custumerview')
+def CustomerviewPage():
+    return render_template('CustomerView.html')
 
 
 if __name__ == '__main__':
