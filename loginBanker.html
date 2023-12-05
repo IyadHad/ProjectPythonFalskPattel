@@ -1,0 +1,42 @@
+<head>
+    <style>
+  .center-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh; /* Ajustez la hauteur selon vos besoins */
+    }
+
+    .invalid-feedback span {
+    color: red;
+    font-weight: bold;
+    }
+  
+    </style>
+</head>
+{% extends "layout.html" %}
+{% block content %}
+<div class="center-container">
+    {{ form.hidden_tag() }}
+    <form method='POST', action="">
+        <fieldset class="form-group">
+            <div class="form-group">
+                {{ form.password.label(class="form-control-label") }}
+                {% if form.password.errors %}
+                    {{ form.password(class='form-control form-control-lg is-invalid') }}
+                    <div class="invalid-feedback">
+                        {% for error in form.password.errors %}
+                            <span> {{ error }} </span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.password(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+        </fieldset>
+        <div class="form-group" style="margin-bottom: 20px;">
+            {{ form.submit(class="btn btn-outline-info") }}
+        </div>
+    </form>
+</div>
+{% endblock content %}
