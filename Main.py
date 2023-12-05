@@ -1,0 +1,56 @@
+from flask import Flask, render_template, url_for,request,redirect,flash
+from form import RegistrationForm,LoginForm
+import os
+
+app = Flask(__name__,template_folder='ProjectTemplate')
+import secrets
+a = str(secrets.token_hex(16))
+app.config['SECRET_KEY']=a
+
+IMG_FOLDER = os.path.join("images")
+app.config["images"] = IMG_FOLDER
+
+@app.route("/")
+@app.route("/Home")
+def HomePage():
+    Flask_Logo1 = os.path.join(app.config["images"], "BankerImage.jpg")
+    Flask_Logo2 = os.path.join(app.config["images"], "CustomerImage.jpg")
+    return render_template('Home.html', user_image1= Flask_Logo1, user_image2 = Flask_Logo2)
+
+@app.route("/")
+@app.route("/about")
+def AboutPage():
+    return render_template('about.html')
+
+@app.route("/")
+@app.route("/notes")
+def TestPage():
+    return render_template('notes.html')
+
+@app.route("/register", methods=['GET', 'POST'])
+def register():
+    reg_form = RegistrationForm()
+    if reg_form.validate_on_submit():
+        flash(f'Account created for {reg_form.username.data}!', 'success')
+        return redirect(url_for('HomePage'))
+    return render_template('register.html', title='Register', form=reg_form)
+
+@app.route("/login", methods=['GET', 'POST'])
+def login():
+    log_form = LoginForm()
+    if log_form.validate_on_submit():
+        if log_form.email.data == 'admin@blog.com' and log_form.password.data == 'password':
+            flash('You have been logged in!', 'success')
+            return redirect(url_for('HomePage'))
+        else:
+            flash('Login Unsuccessful. Please check username and password.', 'danger')
+    return render_template('loginCustomer.html', title='Login Customer', form=log_form)
+
+@app.route("/")
+@app.route("/bankerLog")
+def LoginBankerPage():
+    return render_template('loginBanker.html')
+
+
+if __name__ == '__main__':
+	app.run(debug=True)
