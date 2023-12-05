@@ -24,18 +24,19 @@ def register():
         first_name = request.form.get('first_name')
         last_name = request.form.get('last_name')
         email = request.form.get('email')
-        save_to_file(first_name, last_name, email)	
+        password = request.form.get('password')
+        save_to_file(first_name, last_name, email, password)	
         flash(f'Account created for {reg_form.first_name.data}!', 'success')
         return redirect(url_for('HomePage'))
     return render_template('register.html', title='Register', form=reg_form)
 
-def save_to_file(first_name, last_name, email):
+def save_to_file(first_name, last_name, email, password):
     file_path = 'customers.txt'
     if not os.path.exists(file_path):
         with open(file_path, 'w'):
             pass
     with open(file_path, 'a') as file:
-        file.write(f'{first_name}, {last_name}, {email}\n')
+        file.write(f'{first_name}, {last_name}, {email}, {password}\n')
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
