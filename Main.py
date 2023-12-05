@@ -172,7 +172,7 @@ def load_transactions():
             transaction = {
                 'account': account,
                 'action': action,
-                'amount': float(amount)  # Assurez-vous de convertir le montant en nombre si nécessaire
+                'amount': float(amount)  
             }
             transactions.append(transaction)
 
@@ -184,7 +184,7 @@ def stream():
             transactions = load_transactions()
             for transaction in transactions:
                 yield f'data: {transaction}\n\n'
-            time.sleep(1)  # Ajoutez un délai d'attente pour éviter une boucle infinie rapide
+            time.sleep(1)  
 
     return Response(generate(), content_type='text/event-stream')
 
