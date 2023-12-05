@@ -1,42 +1,39 @@
-from flask import Flask, render_template, url_for, request, flash, redirect
-from form import RegistrationForm, LoginForm, BankerlogForm
-import pandas as pd
+from flask import Flask, render_template, url_for,request,redirect,flash
+from form import RegistrationForm,LoginForm
 import os
 
 app = Flask(__name__,template_folder='ProjectTemplate')
+import secrets
+a = str(secrets.token_hex(16))
+app.config['SECRET_KEY']=a
 
-app.config['SECRET_KEY']='6c4448ffb775aa1831b04ef0a9a1b4df'
+IMG_FOLDER = os.path.join("images")
+app.config["images"] = IMG_FOLDER
 
 @app.route("/")
 @app.route("/Home")
 def HomePage():
-    return render_template('Home.html')
+    Flask_Logo1 = os.path.join(app.config["images"], "BankerImage.jpg")
+    Flask_Logo2 = os.path.join(app.config["images"], "CustomerImage.jpg")
+    return render_template('Home.html', user_image1= Flask_Logo1, user_image2 = Flask_Logo2)
 
 @app.route("/")
-@app.route("/About")
+@app.route("/about")
 def AboutPage():
     return render_template('about.html')
+
+@app.route("/")
+@app.route("/notes")
+def TestPage():
+    return render_template('notes.html')
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     reg_form = RegistrationForm()
-    if reg_form.validate_on_submit() and request.method == 'POST':
-        first_name = request.form.get('first_name')
-        last_name = request.form.get('last_name')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        save_to_file(first_name, last_name, email, password)	
-        flash(f'Account created for {reg_form.first_name.data}!', 'success')
+    if reg_form.validate_on_submit():
+        flash(f'Account created for {reg_form.username.data}!', 'success')
         return redirect(url_for('HomePage'))
     return render_template('register.html', title='Register', form=reg_form)
-
-def save_to_file(first_name, last_name, email, password):
-    file_path = 'customers.txt'
-    if not os.path.exists(file_path):
-        with open(file_path, 'w'):
-            pass
-    with open(file_path, 'a') as file:
-        file.write(f'{first_name}, {last_name}, {email}, {password}\n')
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
@@ -47,18 +44,13 @@ def login():
             return redirect(url_for('HomePage'))
         else:
             flash('Login Unsuccessful. Please check username and password.', 'danger')
-    return render_template('login.html', title='Login Customer', form=log_form)
+    return render_template('loginCustomer.html', title='Login Customer', form=log_form)
 
-@app.route("/bankerLog", methods=['GET', 'POST'])
+@app.route("/")
+@app.route("/bankerLog")
 def LoginBankerPage():
-    banker_log = BankerlogForm()
-    if banker_log.submit.data == True:
-        if banker_log.password.data == 'A1234':
-            flash('You have been logged in!', 'success')
-            return redirect(url_for('HomePage'))
-        else:
-            flash('Login Unsuccessful. Please check password.', 'danger')
-    return render_template('loginBanker.html', title='Login Banker', form=banker_log)
+    return render_template('loginBanker.html')
+
 
 if __name__ == '__main__':
 	app.run(debug=True)
