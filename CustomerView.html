@@ -47,7 +47,6 @@
 
     <script>
         function refreshTransactions() {
-            // Effectuez une requête AJAX pour récupérer les transactions
             fetch('/get_transactions')
                 .then(response => response.json())
                 .then(transactions => {
@@ -63,10 +62,8 @@
                 .catch(error => console.error('Error fetching transactions:', error));
         }
 
-        // Rafraîchissez les transactions toutes les 5 secondes (ajustez selon vos besoins)
         setInterval(refreshTransactions, 5000);
 
-        // Appelez refreshTransactions une fois au chargement de la page
         refreshTransactions();
     </script>
 </body>
