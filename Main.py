@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for,request,redirect,flash, jsonify, Response
+from flask import Flask, render_template, url_for,request,redirect,flash, jsonify, Response,stream_with_context
 from form import RegistrationForm,LoginForm, BankerlogForm,customer
 import os
 import pandas as pd
@@ -15,12 +15,10 @@ app.config['SECRET_KEY']=a
 def HomePage():
     return render_template('Home.html')
 
-@app.route("/")
 @app.route("/about")
 def AboutPage():
     return render_template('about.html')
 
-@app.route("/")
 @app.route("/notes")
 def TestPage():
     return render_template('notes.html')
@@ -32,7 +30,7 @@ def save_to_file(first_name, last_name, email,password):
         with open(file_path, 'w'):
             pass
     with open(file_path, 'a') as file:
-        file.write(f'{first_name},{last_name},{email},{password}\n')
+        file.write(f'{first_name},{last_name},{email},{password},0,0\n')
 
 def Find_file_name(first_name,last_name):
     count=1
@@ -44,7 +42,7 @@ def Find_file_name(first_name,last_name):
         if str.upper(last_name[0]) == i:
             countf2=count
         count+=1
-        return f"{str.upper(first_name[0])}{str.upper(last_name[0])}-{len(first_name)+len(last_name)}-{countf1}-{countf2}.txt"
+    return f"static/PoubelleDepatel/{str.upper(first_name[0])}{str.upper(last_name[0])}-{len(first_name)+len(last_name)}-{countf1}-{countf2}.txt"
 
 def Create_Perso_File_Customer(first_name, last_name, email,password):
     count=1
@@ -60,8 +58,6 @@ def Create_Perso_File_Customer(first_name, last_name, email,password):
     if not os.path.exists(file_path):
         with open(file_path, 'w'):
             pass
-        with open(file_path, 'a') as file:
-            file.write(f'{first_name},{last_name},{email},{password};\n')
 
 def txtToListe(file_path):
     final_list=[]
@@ -70,7 +66,7 @@ def txtToListe(file_path):
         customer_list=a.split('\n')
         for i in customer_list:
             if i != '':
-                final_list.append(customer(i.split(',')[0],i.split(',')[1],i.split(',')[2],i.split(',')[3]))
+                final_list.append(customer(i.split(',')[0],i.split(',')[1],i.split(',')[2],i.split(',')[3],i.split(',')[4],i.split(',')[5]))
     return final_list
 
 def record_transaction(first_name,last_name,account_type, action, amount):
@@ -103,18 +99,17 @@ def login():
     if log_form.validate_on_submit():
         for i in custumer_list:
             if log_form.email.data == i.get_email() and log_form.password.data == i.get_password():
-                customer_associate = customer(i.get_first_name(),i.get_last_name(),i.get_email(),i.get_password())
+                customer_associate = customer(i.get_first_name(),i.get_last_name(),i.get_email(),i.get_password(),i.current,i.savings)
                 boolean =True
                 break
         if boolean==True:
                 flash('You have been logged in!', 'success')
                 print(isinstance(customer_associate,customer))
-                return redirect(url_for('CustomerviewPage', customer_associate=f"{customer_associate.first_name}_{customer_associate.last_name}_{customer_associate.email}_{customer_associate.password}"))
+                return redirect(url_for(f'CustomerviewPage',customer_associate=customer_associate.tostring()))
         else:
             flash('Login Unsuccessful. Please check username and password.', 'danger')
     return render_template('loginCustomer.html', title='Login Customer', form=log_form)
 
-@app.route("/")
 @app.route("/bankerLog",methods=['GET', 'POST'])
 def LoginBankerPage():
     bankerform = BankerlogForm()
@@ -126,85 +121,104 @@ def LoginBankerPage():
             flash('Login Unsuccessful. Please check username and password.', 'danger')
     return render_template('loginBanker.html',title='Login Banker',form=bankerform)
 
-@app.route("/")
 @app.route('/bankerview')
 def BankerviewPage():
     return render_template('BankerView.html')
 
-@app.route("/")
-@app.route('/custumerview/<customer_associate>')    
+@app.route('/')
+@app.route('/custumerview/<customer_associate>', methods=['GET', 'POST'])
 def CustomerviewPage(customer_associate):
-    a = customer_associate.split('_')
-    customer_associate = customer(a[0],a[1],a[2],a[3])
+    a = customer_associate.split('-')
+    customer_associate = customer(a[0],a[1],a[2],a[3],a[4],a[5])
     if request.method == 'POST':
         action = request.form.get('action')
         account_type = request.form.get('account_type')
         amount = float(request.form.get('amount'))
-
+        print(amount)
         if account_type not in ('current', 'savings'):
             flash('Invalid account type', 'danger')
             return redirect(url_for('CustomerviewPage'))
 
         if action == 'withdraw':
-            success, message = withdraw(account_type, amount)
+            success, message = withdraw(account_type, amount,customer_associate.first_name,customer_associate.last_name)
             if not success:
                 flash(message, 'danger')
             else:
                 flash(message, 'success')
         elif action == 'deposit':
-            deposit(account_type, amount)
+            deposit(account_type, amount,customer_associate.first_name,customer_associate.last_name)
             flash(f'Deposited {amount} into {account_type} account', 'success')
 
-    # Charger les informations du compte
-    accounts = load_accounts()
-    return render_template('CustomerView.html',customer_associate=customer_associate,accounts=accounts)
+    return render_template('CustomerView.html',customer_associate=customer_associate)
 
 def load_accounts(first_name,last_name):
-    file_path = Find_file_name(first_name,last_name)
+    file_path = 'static/PoubelleDepatel/customer.txt'
     accounts = {'current': 0.0, 'savings': 0.0}
-
     if file_path and os.path.exists(file_path):
         with open(file_path, 'r') as file:
             for line in file:
-                elements = line.strip().split(',')
-                if len(elements) >= 2:
-                    account_type, balance = map(str.strip, elements[:2])
-                    accounts[account_type] = float(balance)
-                else:
-                    flash(f'Invalid line in file: {line}', 'error')
-
+                l = line.split(',')
+                print(l)
+                if l[0] == first_name and l[1] == last_name:
+                    print(l[0])
+                    print(l[1])
+                    accounts['current']=float(l[len(l)-2])
+                    accounts['savings']=float(l[len(l)-1])
+                    print(accounts)
     return accounts
-def save_accounts(accounts):
-    file_path = 'user_accounts.txt'
 
-    with open(file_path, 'w') as file:
-        for account_type, balance in accounts.items():
-            file.write(f'{account_type},{balance}\n')
 
-def withdraw(account_type, amount):
-    accounts = load_accounts()
+def save_accounts(accounts,first_name,last_name):
+    file_path = 'static/PoubelleDepatel/customer.txt'
+    with open(file_path, 'r') as file:
+            lines = file.readlines()
+            with open(file_path, 'w') as writer:
+                pass
+            for line in lines:
+                l = line.split(',')
+                if l[0]== first_name and l[1]==last_name:
+                    l[len(l)-2]=accounts['current']
+                    l[len(l)-1]=accounts['savings']
+                    with open(file_path, 'a') as writer:
+                        for element in l:
+                            if l[-1]!=element:
+                                writer.writelines(f"{element},")
+                            else:
+                                writer.writelines(f"{element}\n")
+                else:
+                    with open(file_path, 'a') as writer:
+                        for element in l:
+                                if l[-1]!=element:
+                                    writer.writelines(f"{element},")
+                                else:
+                                    writer.writelines(f"{element}\n")
+                        break
+
+#a,a,a@gmail.com,a,0.0,0.0
+def withdraw(account_type, amount,first_name,last_name):
+    accounts = load_accounts(first_name,last_name)
     if amount > accounts[account_type]:
         return False, 'Insufficient funds'
     else:
         accounts[account_type] -= amount
-        save_accounts(accounts)
-        record_transaction(account_type, 'withdraw', amount)
+        save_accounts(accounts,first_name,last_name)
+        record_transaction(account_type, 'withdraw', amount,first_name,last_name)
         return True, f'Withdrew {amount} from {account_type} account'
 
-def deposit(account_type, amount):
-    accounts = load_accounts()
+def deposit(account_type, amount,first_name,last_name):
+    accounts = load_accounts(first_name,last_name)
     accounts[account_type] += amount
-    save_accounts(accounts)
-    record_transaction(account_type, 'deposit', amount)
+    save_accounts(accounts,first_name,last_name)
+    record_transaction(account_type, 'deposit', amount,first_name,last_name)
 
-def record_transaction(account_type, action, amount):
-    file_path = 'transaction_history.txt'
+def record_transaction(account_type, action, amount,first_name,last_name):
+    file_path = Find_file_name(first_name,last_name)
 
     with open(file_path, 'a') as file:
         file.write(f'{account_type},{action},{amount}\n')
 
-def load_transactions():
-    file_path = 'transaction_history.txt'
+def load_transactions(first_name,last_name):
+    file_path = Find_file_name(first_name,last_name)
     transactions = []
 
     with open(file_path, 'r') as file:
@@ -216,24 +230,13 @@ def load_transactions():
                 'amount': float(amount)  
             }
             transactions.append(transaction)
-
     return transactions
 
-def stream():
-    def generate():
-        while True:
-            transactions = load_transactions()
-            for transaction in transactions:
-                yield f'data: {transaction}\n\n'
-            time.sleep(1)  
-
-    return Response(generate(), content_type='text/event-stream')
-
-@app.route('/get_transactions')
-def get_transactions():
-    transactions = load_transactions()
+@app.route('/get_transactions/<first_name>/<last_name>', methods=['GET', 'POST'])
+def get_transactions(first_name,last_name):
+    print(first_name,last_name)
+    transactions = load_transactions(first_name,last_name)
     return jsonify(transactions)
-
 
 if __name__ == '__main__':
 	app.run(debug=True)

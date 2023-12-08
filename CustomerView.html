@@ -16,13 +16,8 @@
     <div style="display: flex; justify-content: space-around;">
         <div>
             <h2>Current Account</h2>
-            <p>Balance: {{ accounts.current }}€</p> 
-            <ul>
-               {% for transaction in accounts.transactions %}
-                  <li>{{ transaction.2 }} {{ transaction.1 }} on {{ transaction.0 }}</li>
-               {% endfor %}
-            </ul>
-            <form method="POST" action="{{ url_for('CustomerviewPage') }}">
+            <p>Balance: {{ customer_associate.current }}€</p> 
+            <form method="POST" action="{{ url_for('CustomerviewPage',customer_associate=customer_associate.tostring())}}">
                 <input type="hidden" name="account_type" value="current">
                 <label for="amount">Amount:</label>
                 <input type="number" name="amount" required>
@@ -32,8 +27,8 @@
         </div>
         <div>
             <h2>Savings Account</h2>
-            <p>Balance: {{ accounts.savings }}€</p>
-            <form method="POST" action="{{ url_for('CustomerviewPage') }}">
+            <p>Balance: {{ customer_associate.savings }}€</p>
+            <form method="POST" action="{{url_for('CustomerviewPage',customer_associate=customer_associate.tostring())}}">
                 <input type="hidden" name="account_type" value="savings">
                 <label for="amount">Amount:</label>
                 <input type="number" name="amount" required>
@@ -55,15 +50,17 @@
             <!-- Les transactions seront ajoutées ici au fur et à mesure -->
         </tbody>
     </table>
-
     <script>
+        var customer_associate_last_name = "{{ customer_associate.last_name }}";
+        var customer_associate_first_name = "{{customer_associate.first_name}}"
+        // Fonction pour mettre à jour le tableau des transactions
         function refreshTransactions() {
-            fetch('/get_transactions')
+            fetch(`/get_transactions/${customer_associate_first_name}/${customer_associate_last_name}`)
                 .then(response => response.json())
                 .then(transactions => {
                     const tableBody = document.getElementById('transactionTableBody');
                     tableBody.innerHTML = ''; // Efface le contenu actuel du tableau
-
+    
                     // Ajoute les nouvelles transactions au tableau
                     transactions.forEach(transaction => {
                         const row = `<tr><td>${transaction.account}</td><td>${transaction.action}</td><td>${transaction.amount}</td></tr>`;
@@ -72,9 +69,11 @@
                 })
                 .catch(error => console.error('Error fetching transactions:', error));
         }
-
+    
+        // Rafraîchit les transactions toutes les 5 secondes
         setInterval(refreshTransactions, 5000);
-
+    
+        // Appelle la fonction pour la première fois lors du chargement de la page
         refreshTransactions();
     </script>
 </body>

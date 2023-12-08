@@ -22,11 +22,13 @@ class BankerlogForm(FlaskForm):
 	submit = SubmitField('Login')
 
 class customer():
-	def __init__(self,first_name,last_name,email,password):
+	def __init__(self,first_name,last_name,email,password,current,savings):
 		self.first_name = first_name
 		self.last_name = last_name
 		self.email = email
 		self.password=password
+		self.current = current
+		self.savings = savings
 
 	def get_email(self):
 		return self.email
@@ -39,3 +41,16 @@ class customer():
 	
 	def get_last_name(self):
 		return self.last_name
+	
+	def set_current(self, value):
+		self.current = value
+
+	def set_savings(self, value):
+		self.savings = value
+
+	def to_dictionary(self):
+		return {"first_name": self.first_name, "last_name": self.last_name, "email": self.email, "password": self.password, "current": self.current, "savings": self.savings}
+	
+	def tostring(self):
+		return f"{self.first_name}-{self.last_name}-{self.email}-{self.password}-{self.current}-{self.savings}"
+	
