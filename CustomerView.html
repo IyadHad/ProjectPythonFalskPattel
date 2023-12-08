@@ -1,5 +1,16 @@
 {% extends "layout.html" %}
 {% block content %}
+<div class = "container messages-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+             {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                   {{ message }}
+                </div>
+             {% endfor %}
+          {% endif %}
+    {% endwith %}
+</div>
 <body>
     <h1>Bank Accounts</h1>
     <div style="display: flex; justify-content: space-around;">

@@ -1,12 +1,14 @@
-from flask import Flask, render_template, url_for, request, flash, redirect, jsonify, Response
-from form import RegistrationForm, LoginForm, BankerlogForm, History
-import pandas as pd
+from flask import Flask, render_template, url_for,request,redirect,flash, jsonify, Response
+from form import RegistrationForm,LoginForm, BankerlogForm,customer
 import os
+import pandas as pd
 alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+app = Flask(__name__,template_folder='ProjectTemplate',static_folder='static')
+import secrets
+import time
 
-app = Flask(__name__, template_folder='ProjectTemplate')
-
-app.config['SECRET_KEY']='6c4448ffb775aa1831b04ef0a9a1b4df'
+a = str(secrets.token_hex(16))
+app.config['SECRET_KEY']=a
 
 @app.route("/")
 @app.route("/Home")
@@ -14,17 +16,23 @@ def HomePage():
     return render_template('Home.html')
 
 @app.route("/")
-@app.route("/About")
+@app.route("/about")
 def AboutPage():
     return render_template('about.html')
 
-def save_to_file(first_name, last_name, email, password):
-    file_path = 'customers.txt'
+@app.route("/")
+@app.route("/notes")
+def TestPage():
+    return render_template('notes.html')
+
+#region files creations
+def save_to_file(first_name, last_name, email,password):
+    file_path = 'static\PoubelleDepatel\customer.txt'
     if not os.path.exists(file_path):
         with open(file_path, 'w'):
             pass
     with open(file_path, 'a') as file:
-        file.write(f'{first_name}, {last_name}, {email}, {password}\n')
+        file.write(f'{first_name},{last_name},{email},{password}\n')
 
 def Find_file_name(first_name,last_name):
     count=1
@@ -38,7 +46,7 @@ def Find_file_name(first_name,last_name):
         count+=1
         return f"{str.upper(first_name[0])}{str.upper(last_name[0])}-{len(first_name)+len(last_name)}-{countf1}-{countf2}.txt"
 
-def Create_Perso_File_Customer(first_name, last_name, email, password):
+def Create_Perso_File_Customer(first_name, last_name, email,password):
     count=1
     countf1=0
     countf2=0
@@ -48,12 +56,29 @@ def Create_Perso_File_Customer(first_name, last_name, email, password):
         if str.upper(last_name[0]) == i:
             countf2=count
         count+=1
-    file_path = f'PoubelleDepatel\{str.upper(first_name[0])}{str.upper(last_name[0])}-{len(first_name)+len(last_name)}-{countf1}-{countf2}.txt'
+    file_path = f'static\PoubelleDepatel\{str.upper(first_name[0])}{str.upper(last_name[0])}-{len(first_name)+len(last_name)}-{countf1}-{countf2}.txt'
     if not os.path.exists(file_path):
         with open(file_path, 'w'):
             pass
         with open(file_path, 'a') as file:
-            file.write(f'{first_name}, {last_name}, {email}, {password};\n')
+            file.write(f'{first_name},{last_name},{email},{password};\n')
+
+def txtToListe(file_path):
+    final_list=[]
+    with open(file_path, 'r', encoding='utf-8') as file:
+        a = file.read()
+        customer_list=a.split('\n')
+        for i in customer_list:
+            if i != '':
+                final_list.append(customer(i.split(',')[0],i.split(',')[1],i.split(',')[2],i.split(',')[3]))
+    return final_list
+
+def record_transaction(first_name,last_name,account_type, action, amount):
+    file_path = Find_file_name(first_name,last_name)
+
+    with open(file_path, 'a') as file:
+        file.write(f'{account_type},{action},{amount}\n')
+#endregion 
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
@@ -63,36 +88,54 @@ def register():
         last_name = request.form.get('last_name')
         email = request.form.get('email')
         password = request.form.get('password')
-        save_to_file(first_name, last_name, email, password)
-        Create_Perso_File_Customer(first_name, last_name, email,password)	
+        save_to_file(first_name, last_name, email,password)	
+        Create_Perso_File_Customer(first_name, last_name, email,password)
         flash(f'Account created for {reg_form.first_name.data}!', 'success')
-        return redirect(url_for('HomePage'))
+        return redirect(url_for('CustomerviewPage'))
     return render_template('register.html', title='Register', form=reg_form)
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     log_form = LoginForm()
+    file_path = 'static\PoubelleDepatel\customer.txt'
+    custumer_list = txtToListe(file_path)
+    boolean = False
     if log_form.validate_on_submit():
-        if log_form.email.data == 'admin@blog.com' and log_form.password.data == 'password':
-            flash('You have been logged in!', 'success')
-            return redirect(url_for('CustomerviewPage'))
+        for i in custumer_list:
+            if log_form.email.data == i.get_email() and log_form.password.data == i.get_password():
+                customer_associate = customer(i.get_first_name(),i.get_last_name(),i.get_email(),i.get_password())
+                boolean =True
+                break
+        if boolean==True:
+                flash('You have been logged in!', 'success')
+                print(isinstance(customer_associate,customer))
+                return redirect(url_for('CustomerviewPage', customer_associate=f"{customer_associate.first_name}_{customer_associate.last_name}_{customer_associate.email}_{customer_associate.password}"))
         else:
             flash('Login Unsuccessful. Please check username and password.', 'danger')
-    return render_template('login.html', title='Login Customer', form=log_form)
+    return render_template('loginCustomer.html', title='Login Customer', form=log_form)
 
-@app.route("/bankerLog", methods=['GET', 'POST'])
+@app.route("/")
+@app.route("/bankerLog",methods=['GET', 'POST'])
 def LoginBankerPage():
-    banker_log = BankerlogForm()
-    if banker_log.submit.data == True:
-        if banker_log.password.data == 'A1234':
-            flash('You have been logged in!', 'success')
-            return redirect(url_for('HomePage'))
-        else:
-            flash('Login Unsuccessful. Please check password.', 'danger')
-    return render_template('loginBanker.html', title='Login Banker', form=banker_log)
+    bankerform = BankerlogForm()
+    if bankerform.submit.data==True:
+        if bankerform.password.data == 'A1234':
+            flash('You have been logged in the bank interface!', 'success')
+            return redirect(url_for('BankerviewPage'))
+        else :
+            flash('Login Unsuccessful. Please check username and password.', 'danger')
+    return render_template('loginBanker.html',title='Login Banker',form=bankerform)
 
-@app.route('/custumerview', methods=['GET', 'POST'])
-def CustomerviewPage():
+@app.route("/")
+@app.route('/bankerview')
+def BankerviewPage():
+    return render_template('BankerView.html')
+
+@app.route("/")
+@app.route('/custumerview/<customer_associate>')    
+def CustomerviewPage(customer_associate):
+    a = customer_associate.split('_')
+    customer_associate = customer(a[0],a[1],a[2],a[3])
     if request.method == 'POST':
         action = request.form.get('action')
         account_type = request.form.get('account_type')
@@ -114,11 +157,10 @@ def CustomerviewPage():
 
     # Charger les informations du compte
     accounts = load_accounts()
+    return render_template('CustomerView.html',customer_associate=customer_associate,accounts=accounts)
 
-    return render_template('CustomerView.html', accounts=accounts)
-
-def load_accounts():
-    file_path = 'user_accounts.txt'
+def load_accounts(first_name,last_name):
+    file_path = Find_file_name(first_name,last_name)
     accounts = {'current': 0.0, 'savings': 0.0}
 
     if file_path and os.path.exists(file_path):
@@ -132,7 +174,6 @@ def load_accounts():
                     flash(f'Invalid line in file: {line}', 'error')
 
     return accounts
-
 def save_accounts(accounts):
     file_path = 'user_accounts.txt'
 

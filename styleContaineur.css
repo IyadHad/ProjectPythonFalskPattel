@@ -1,3 +1,30 @@
+.myLitleButton{
+    background-color: #00000000; /* black */
+    font-style: helvetica;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
+
+.mynav{
+    align-items: center;
+    list-style-type: none;
+    margin-top: 10px;  
+    display: inline-block;/*alignement horizontal des boutons social links*/
+    top: 25px;
+    left: 50px;
+    align-content: right;
+    display:flex;
+    flex-direction: row;
+    align-items: center;
+    border: none;
+}
+
+
 body {
     margin: 0;
     padding: 0;
@@ -7,11 +34,23 @@ body {
     height: 100vh;
 }
 
+h1{
+    margin: 0;
+}
+
 header {
-    background-color: #333;
-    color: #fff;
+    background-color: #070707;
+    color: #f6efef;
     padding: 10px;
-    text-align: center;
+    text-align: left;
+    height: 80px;
+    align-items: center;
+    align-content: center;
+    padding: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
 }
 
 .content {
@@ -28,15 +67,38 @@ header {
 
 .box1 {
     order: 2;
+    background-image: url("//FinalProjectPython//images//CustomerImage.jpg");
 }
 
 .box2 {
     order: 1;
+    background-image: url("//FinalProjectPython//images//BankerImage.jpg");
 }
 
 footer {
-    background-color: #333;
+    background-color: #000000;
     color: #fff;
     padding: 10px;
     text-align: center;
+}
+
+button {
+    display:inline-block;
+    color:#444;
+    border:1px solid #CCC;
+    background:#DDD;
+    box-shadow: 0 0 5px -1px rgba(0,0,0,0.2);
+    cursor:pointer;
+    vertical-align:middle;
+    max-width: 100px;
+    padding: 5px;
+    text-align: center;
+}
+
+.messages-container {
+    margin-top: 100px;
+}
+
+.alert {
+    margin-bottom: 10px;
 }
