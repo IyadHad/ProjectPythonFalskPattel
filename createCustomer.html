@@ -1,0 +1,84 @@
+<head>
+  <style>
+.center-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Ajustez la hauteur selon vos besoins */
+}
+
+.centered-element {
+    /* Vos styles pour l'élément centré */
+}
+
+.invalid-feedback span {
+    color: red;
+    font-weight: bold;
+}
+
+.redirect-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px;
+            background-color: #6fa8dc;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+  </style>
+</head>
+
+{% extends "layout.html" %}
+{% block content %}
+<div class="center-container">
+	   <form method='POST', action="">
+               {{ form.hidden_tag() }}
+            <fieldset class="form-group">
+	     <div class="form-group">
+		  {{ form.first_name.label(class="form-control-label") }}
+                  {% if form.first_name.errors %}
+    			{{ form.first_name(class='form-control form-control-lg is-invalid') }}
+    			<div class="invalid-feedback">
+       				{% for error in form.first_name.errors %}
+          				<span> {{ error }} </span>
+       		  		{% endfor %}
+    			</div>
+                   {% else %}
+      			{{ form.first_name(class="form-control form-control-lg") }}
+  		   {% endif %}
+	     </div>
+	     <div class="form-group">
+		  {{ form.last_name.label(class="form-control-label") }}
+                  {% if form.last_name.errors %}
+    			{{ form.last_name(class='form-control form-control-lg is-invalid') }}
+    			<div class="invalid-feedback">
+       				{% for error in form.last_name.errors %}
+          				<span> {{ error }} </span>
+       		  		{% endfor %}
+    			</div>
+                   {% else %}
+      			{{ form.last_name(class="form-control form-control-lg") }}
+  		   {% endif %}
+	     </div>
+	     <div class="form-group">
+		  {{ form.email.label(class="form-control-label") }}
+                  {% if form.email.errors %}
+    			{{ form.email(class='form-control form-control-lg is-invalid') }}
+    			<div class="invalid-feedback">
+       				{% for error in form.email.errors %}
+          			<span> {{ error }} </span>
+       		  		{% endfor %}
+    			</div>
+                   {% else %}
+      			{{ form.email(class="form-control form-control-lg") }}
+  		   {% endif %}
+	     </div>
+	     <div class="from-group" style="margin-bottom: 20px;">
+		    {{ form.submit(class="btn btn-outline-info") }}
+	     </div>
+
+	     <a class="redirect-button" href="/bankerview">Return to Banker Employee View Page</a>
+{% endblock content %}

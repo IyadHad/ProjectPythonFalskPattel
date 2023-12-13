@@ -1,31 +1,29 @@
-from flask import Flask, render_template, url_for,request,redirect,flash, jsonify, Response,stream_with_context
-from form import RegistrationForm,LoginForm, BankerlogForm,customer
-import os
+from flask import Flask, render_template, url_for, request, flash, redirect, jsonify, Response
+from form import RegistrationForm, LoginForm, BankerlogForm, customer, BankerCreate
 import pandas as pd
+import os
 alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
-app = Flask(__name__,template_folder='ProjectTemplate',static_folder='static')
-import secrets
-import time
 
-a = str(secrets.token_hex(16))
-app.config['SECRET_KEY']=a
+app = Flask(__name__, template_folder='ProjectTemplate')
+
+app.config['SECRET_KEY']='6c4448ffb775aa1831b04ef0a9a1b4df'
+
+IMG_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images")
+app.config["UPLOAD_FOLDER"] = IMG_FOLDER
+
 
 @app.route("/")
 @app.route("/Home")
 def HomePage():
     return render_template('Home.html')
 
-@app.route("/about")
+@app.route("/")
+@app.route("/About")
 def AboutPage():
     return render_template('about.html')
 
-@app.route("/notes")
-def TestPage():
-    return render_template('notes.html')
-
-#region files creations
-def save_to_file(first_name, last_name, email,password):
-    file_path = 'static\PoubelleDepatel\customer.txt'
+def save_to_file(first_name, last_name, email, password):
+    file_path = 'static\FileCustomer\customer.txt'
     if not os.path.exists(file_path):
         with open(file_path, 'w'):
             pass
@@ -42,9 +40,9 @@ def Find_file_name(first_name,last_name):
         if str.upper(last_name[0]) == i:
             countf2=count
         count+=1
-    return f"static/PoubelleDepatel/{str.upper(first_name[0])}{str.upper(last_name[0])}-{len(first_name)+len(last_name)}-{countf1}-{countf2}.txt"
+    return f"{str.upper(first_name[0])}{str.upper(last_name[0])}-{len(first_name)+len(last_name)}-{countf1}-{countf2}.txt"
 
-def Create_Perso_File_Customer(first_name, last_name, email,password):
+def Create_Perso_File_Customer(first_name, last_name, email, password):
     count=1
     countf1=0
     countf2=0
@@ -54,10 +52,12 @@ def Create_Perso_File_Customer(first_name, last_name, email,password):
         if str.upper(last_name[0]) == i:
             countf2=count
         count+=1
-    file_path = f'static\PoubelleDepatel\{str.upper(first_name[0])}{str.upper(last_name[0])}-{len(first_name)+len(last_name)}-{countf1}-{countf2}.txt'
+    file_path = f'static\FileCustomer\{str.upper(first_name[0])}{str.upper(last_name[0])}-{len(first_name)+len(last_name)}-{countf1}-{countf2}.txt'
     if not os.path.exists(file_path):
         with open(file_path, 'w'):
             pass
+        with open(file_path, 'a') as file:
+            file.write(f'{first_name},{last_name},{email},{password};\n')
 
 def txtToListe(file_path):
     final_list=[]
@@ -74,7 +74,6 @@ def record_transaction(first_name,last_name,account_type, action, amount):
 
     with open(file_path, 'a') as file:
         file.write(f'{account_type},{action},{amount}\n')
-#endregion 
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
@@ -84,16 +83,16 @@ def register():
         last_name = request.form.get('last_name')
         email = request.form.get('email')
         password = request.form.get('password')
-        save_to_file(first_name, last_name, email,password)	
-        Create_Perso_File_Customer(first_name, last_name, email,password)
+        save_to_file(first_name, last_name, email, password)
+        Create_Perso_File_Customer(first_name, last_name, email,password)	
         flash(f'Account created for {reg_form.first_name.data}!', 'success')
-        return redirect(url_for('CustomerviewPage'))
+        return redirect(url_for('HomePage'))
     return render_template('register.html', title='Register', form=reg_form)
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     log_form = LoginForm()
-    file_path = 'static\PoubelleDepatel\customer.txt'
+    file_path = 'static\FileCustomer\customer.txt'
     custumer_list = txtToListe(file_path)
     boolean = False
     if log_form.validate_on_submit():
@@ -105,22 +104,23 @@ def login():
         if boolean==True:
                 flash('You have been logged in!', 'success')
                 print(isinstance(customer_associate,customer))
-                return redirect(url_for(f'CustomerviewPage',customer_associate=customer_associate.tostring()))
+                return redirect(url_for('CustomerviewPage', customer_associate=customer_associate.tostring()))
         else:
             flash('Login Unsuccessful. Please check username and password.', 'danger')
-    return render_template('loginCustomer.html', title='Login Customer', form=log_form)
+    return render_template('login.html', title='Login Customer', form=log_form)
 
-@app.route("/bankerLog",methods=['GET', 'POST'])
+@app.route("/bankerLog", methods=['GET', 'POST'])
 def LoginBankerPage():
-    bankerform = BankerlogForm()
-    if bankerform.submit.data==True:
-        if bankerform.password.data == 'A1234':
-            flash('You have been logged in the bank interface!', 'success')
+    banker_log = BankerlogForm()
+    if banker_log.submit.data == True:
+        if banker_log.password.data == 'A1234':
+            flash('You have been logged in!', 'success')
             return redirect(url_for('BankerviewPage'))
-        else :
-            flash('Login Unsuccessful. Please check username and password.', 'danger')
-    return render_template('loginBanker.html',title='Login Banker',form=bankerform)
+        else:
+            flash('Login Unsuccessful. Please check password.', 'danger')
+    return render_template('loginBanker.html', title='Login Banker', form=banker_log)
 
+@app.route("/")
 @app.route('/bankerview')
 def BankerviewPage():
     return render_template('BankerView.html')
@@ -151,8 +151,8 @@ def CustomerviewPage(customer_associate):
 
     return render_template('CustomerView.html',customer_associate=customer_associate)
 
-def load_accounts(first_name,last_name):
-    file_path = 'static/PoubelleDepatel/customer.txt'
+def load_accounts(first_name, last_name):
+    file_path = 'static\FileCustomer\customer.txt'
     accounts = {'current': 0.0, 'savings': 0.0}
     if file_path and os.path.exists(file_path):
         with open(file_path, 'r') as file:
@@ -167,9 +167,8 @@ def load_accounts(first_name,last_name):
                     print(accounts)
     return accounts
 
-
 def save_accounts(accounts,first_name,last_name):
-    file_path = 'static/PoubelleDepatel/customer.txt'
+    file_path = 'static\FileCustomer\customer.txt'
     with open(file_path, 'r') as file:
             lines = file.readlines()
             with open(file_path, 'w') as writer:
@@ -194,7 +193,6 @@ def save_accounts(accounts,first_name,last_name):
                                     writer.writelines(f"{element}\n")
                         break
 
-#a,a,a@gmail.com,a,0.0,0.0
 def withdraw(account_type, amount,first_name,last_name):
     accounts = load_accounts(first_name,last_name)
     if amount > accounts[account_type]:
@@ -237,6 +235,96 @@ def get_transactions(first_name,last_name):
     print(first_name,last_name)
     transactions = load_transactions(first_name,last_name)
     return jsonify(transactions)
+
+def read_customers():
+    customers = []
+    with open('static\FileCustomer\customer.txt', 'r') as file:
+        for line in file:
+            data = line.strip().split(',')
+            customers.append({
+                'first_name': data[0],
+                'last_name': data[1],
+                'email': data[2],
+                'password': data[3],
+                'file_name': Find_file_name(data[0], data[1]),
+                'current_balance': data[4],
+                'savings_balance': data[5]
+            })
+    return customers
+
+@app.route('/listCustomer')
+def listCustomer():
+    customers = read_customers()
+    return render_template('listCustomer.html', customers=customers)
+
+@app.route('/createCustomer', methods=['GET', 'POST'])
+def createCustomer():
+    create_form = BankerCreate()
+    if create_form.validate_on_submit() and request.method == 'POST':
+        first_name = request.form['first_name']
+        last_name = request.form['last_name']
+        email = request.form['email']
+        password = 'password'
+
+        file_name = Find_file_name(first_name, last_name)
+
+        with open('static\FileCustomer\customer.txt', 'a') as customer_file:
+            customer_file.write(f'{first_name},{last_name},{email},{password},0,0\n')
+
+        Create_Perso_File_Customer(first_name, last_name, email, password)
+
+        flash(f'Account created for {create_form.first_name.data}!', 'success')
+        return redirect(url_for('BankerviewPage'))
+
+    return render_template('createCustomer.html', form=create_form)
+
+def read_zero_balance_customers():
+    zero_balance_customers = []
+    lines_to_keep = []
+    with open('static\FileCustomer\customer.txt', 'r') as file:
+        for line in file:
+            data = line.strip().split(',')
+            if float(data[4]) == 0 and float(data[5]) == 0:
+                zero_balance_customers.append({
+                    'first_name': data[0],
+                    'last_name': data[1],
+                    'email': data[2],
+                    'password': data[3],
+                    'file_name': Find_file_name(data[0], data[1]),
+                    'current_balance': data[4],
+                    'savings_balance': data[5]
+                })
+            else:
+                lines_to_keep.append(line)
+
+    with open('static\FileCustomer\customer.txt', 'w') as file:
+        file.writelines(lines_to_keep)
+
+    return zero_balance_customers
+
+@app.route('/deleteCustomers')
+def deleteCustomers():
+    zero_balance_customers = read_zero_balance_customers()
+    return render_template('deleteCustomers.html', zero_balance_customers=zero_balance_customers)
+
+@app.route('/delete_customer/<email>')
+def delete_customer(email):
+    delete_customer_from_file(email)
+    return redirect(url_for('deleteCustomers'))
+
+def delete_customer_from_file(email):
+    lines_to_keep = []
+    with open('static\FileCustomer\customer.txt', 'r') as file:
+        for line in file:
+            data = line.strip().split(',')
+            if data[2] == email:
+                continue
+
+            lines_to_keep.append(line)
+
+    with open('static\FileCustomer\customer.txt', 'w') as file:
+        file.writelines(lines_to_keep)
+
 
 if __name__ == '__main__':
 	app.run(debug=True)
