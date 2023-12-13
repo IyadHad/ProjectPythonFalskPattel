@@ -1,90 +1,29 @@
 <!DOCTYPE html>
-<html>
 <html lang="en"></html>
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <title>Banking Application</title>
-    <link rel="stylesheet" type ="text/css", href="/css_styles/styleContaineur.css" />
-    <style>
-
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-
-        header {
-            background-color: #333;
-            color: #fff;
-            padding: 10px;
-            text-align: center;
-	    position: fixed;
-    	    top: 0;
-   	    width: 100%;
-    	    z-index: 1000;
-        }
-
-        .content {
-            display: flex;
-            flex: 1;
-        }
-
-        .box1, .box2 {
-            padding: 20px;
-            margin: 10px;
-            border: 1px solid #fff;
-            flex: 1;
-        }
-
-        .box1 {
-            order: 2;
-            background-image: url("C:/Users/ihadi/OneDrive/Desktop/cours iralnde/Python/FinalProjectPython/ProjectTemplate/imagesBankerImage.jpg");
-        }
-
-        .box2 {
-            order: 1;
-            background-image: url("C:/Users/ihadi/OneDrive/Desktop/cours iralnde/Python/FinalProjectPython/ProjectTemplate/imagesCustomerImage.jpg");
-        }
-
-        footer {
-            background-color: #333;
-            color: #fff;
-            padding: 10px;
-            text-align: center;
-        }
-
-.messages-container {
-    margin-top: 100px;
-}
-
-.alert {
-    margin-bottom: 10px;
-}
-
-    </style>
+    <title>Banking Aplication</title>
+    <link rel="stylesheet" href="/static/css_styles/styleContaineur.css" />
 </head>
 <body>
-    <div class = "container messages-container">
-      {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-               {% for category, message in messages %}
-                  <div class="alert alert-{{ category }}">
-                     {{ message }}
-                  </div>
-               {% endfor %}
-            {% endif %}
-      {% endwith %}
-    </div>
     <header>
-        <h1>Mon Header</h1>
-        <!-- Ajoutez d'autres éléments de l'en-tête ici -->
+        <nav class="mynav">
+            <h1>Banking Application</h1>
+            <button type="button" onclick="location.href = '/Home'" class = "myLitleButton"><h2>Home</h2></button>
+            <button type="about" onclick="location.href = '/about'" class = "myLitleButton"><h2>About</h2></button>
+        </nav>
     </header>
     {%block content%}
     {%endblock%}
+    <!-- Footer -->
+    <footer>
+        <p>Python project Iyad Hadifé /
+            Romane Laurent /
+            Justine Legall
+        </p>
+        <!-- Ajoutez d'autres éléments de pied de page ici -->
+    </footer>
 </body>
 </html>

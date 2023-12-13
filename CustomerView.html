@@ -1,0 +1,80 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class = "container messages-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+             {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                   {{ message }}
+                </div>
+             {% endfor %}
+          {% endif %}
+    {% endwith %}
+</div>
+    <h1>Bank Account of {{customer_associate.first_name|capitalize}} {{ customer_associate.last_name|capitalize}}</h1>
+    <div style="display: flex; justify-content: space-around;">
+        <div>
+            <h2>Current Account</h2>
+            <p>Balance: {{ customer_associate.current }}€</p> 
+            <form class="form-group" style="margin-bottom: 20px;" method="POST" action="{{ url_for('CustomerviewPage',customer_associate=customer_associate.tostring())}}">
+                <input type="hidden" name="account_type" value="current">
+                <label for="amount">Amount:</label>
+                <input type="number" name="amount" required>
+                <button class="btn btn-outline-info" type="submit" name="action" value="withdraw">Withdraw</button>
+                <button class="btn btn-outline-info" type="submit" name="action" value="deposit">Deposit</button>
+            </form>
+        </div>
+        <div>
+            <h2>Savings Account</h2>
+            <p>Balance: {{ customer_associate.savings }}€</p>
+            <form class="form-group" style="margin-bottom: 20px;" method="POST" action="{{url_for('CustomerviewPage',customer_associate=customer_associate.tostring())}}">
+                <input type="hidden" name="account_type" value="savings">
+                <label for="amount">Amount:</label>
+                <input type="number" name="amount" required>
+                <button class="btn btn-outline-info" type="submit" name="action" value="withdraw">Withdraw</button>
+                <button class="btn btn-outline-info" type="submit" name="action" value="deposit">Deposit</button>
+            </form>
+        </div>
+    </div>
+    <div class="transaction-box">
+        <h1>Transaction History</h1>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Account</th>
+                    <th>Action</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody id="transactionTableBody">
+                <!-- Les transactions seront ajoutées ici au fur et à mesure -->
+            </tbody>
+        </table>
+    </div>
+    <script>
+        var customer_associate_last_name = "{{ customer_associate.last_name }}";
+        var customer_associate_first_name = "{{customer_associate.first_name}}"
+        // Fonction pour mettre à jour le tableau des transactions
+        function refreshTransactions() {
+            fetch(`/get_transactions/${customer_associate_first_name}/${customer_associate_last_name}`)
+                .then(response => response.json())
+                .then(transactions => {
+                    const tableBody = document.getElementById('transactionTableBody');
+                    tableBody.innerHTML = ''; // Efface le contenu actuel du tableau
+    
+                    // Ajoute les nouvelles transactions au tableau
+                    transactions.forEach(transaction => {
+                        const row = `<tr><td>${transaction.account}</td><td>${transaction.action}</td><td>${transaction.amount}</td></tr>`;
+                        tableBody.innerHTML += row;
+                    });
+                })
+                .catch(error => console.error('Error fetching transactions:', error));
+        }
+    
+        // Rafraîchit les transactions toutes les 5 secondes
+        setInterval(refreshTransactions, 5000);
+    
+        // Appelle la fonction pour la première fois lors du chargement de la page
+        refreshTransactions();
+    </script>
+{%endblock%}
