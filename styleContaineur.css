@@ -57,6 +57,9 @@ h1{
     margin: 0;
 }
 
+.layout{
+    margin-top: 100px;
+}
 header {
     grid-row: 1 / 2;
     background-color: #333;
@@ -79,6 +82,7 @@ header {
   }
 
 .content {
+    margin-top: 100px;
     overflow: hidden;
     grid-row: 2 / 3; /* Positionne le contenu au milieu de la grille */
     display: flex;
