@@ -1,0 +1,86 @@
+{% extends "layout.html" %}
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customers with Balances Equal to 0</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 80%;
+            margin: 20px auto;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .delete-button {
+            background-color: #ff0000;
+            color: #fff;
+            padding: 5px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .redirect-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px;
+            background-color: #6fa8dc;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="transaction-box">
+        <h1>Customers with Balances Equal to 0</h1>
+        <table >
+            <thead>
+                <tr>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Email</th>
+                    <th>Account Number</th>
+                    <th>Current Balance</th>
+                    <th>Savings Balance</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in zero_balance_customers %}
+                    <tr>
+                        <td>{{ customer['first_name'] }}</td>
+                        <td>{{ customer['last_name'] }}</td>
+                        <td>{{ customer['email'] }}</td>
+                        <td>{{ customer['file_name'][:-4] }}</td>
+                        <td>{{ customer['current_balance'] }}</td>
+                        <td>{{ customer['savings_balance'] }}</td>
+                        <td><button class="delete-button" onclick="deleteCustomer('{{customer['email']}}')">Delete</button></td>
+                    </tr>   
+                {% endfor %}
+            </tbody>
+        </table>
+        <a class="redirect-button" href="/bankerview">Return to Banker Employee View Page</a>
+        <script>
+            function deleteCustomer(email) {
+                if (confirm('Do you really want to delete that customer?')) {
+                    window.location.href = '/delete_customer/' + email;
+                }
+            }
+        </script>
+    </div>
+</body>
+
+
+{% endblock content %}

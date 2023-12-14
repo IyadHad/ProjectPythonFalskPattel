@@ -11,4 +11,41 @@
           {% endif %}
     {% endwith %}
   </div>
-{%endblock%}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Employee View</title>
+    <style>
+        body {
+            text-align: center;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        li {
+            margin: 0 10px; /* Ajustez la marge entre les éléments selon vos besoins */
+            border: 1px solid #ccc; /* Bordure autour des boutons */
+            padding: 10px;
+        }
+
+        li a {
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bank Employee View</h1>
+    <ul>
+        <li><a href="/listCustomer">List of customers</a></li>
+        <li><a href="/createCustomer">Add a customer</a></li>
+        <li><a href="/deleteCustomers">Delete customers with balance at 0</a></li>
+        <li><a href="/ajouter_enlever_argent">Make a deposit/Withdraw money</a></li>
+    </ul>
+</body>
+ 
+{% endblock content %}
