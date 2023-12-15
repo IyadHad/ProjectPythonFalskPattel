@@ -1,16 +1,40 @@
 {% extends "layout.html" %}
 {% block content %}
 <style>
-    .redirect-button {
+    .button a{
             position: fixed;
-            bottom: 20px;
+            bottom: 100px;
             right: 20px;
             padding: 10px;
-            background-color: #6fa8dc;
-            color: white;
+            background-color: white;
+            border: none;
+            color: #33bbcf;
+            text-align: center;
             text-decoration: none;
-            border-radius: 5px;
-            cursor: pointer;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            border-radius: 0.5rem;
+            font-family: arial;
+            border: 1px solid #33bbcf;
+        }
+
+        .button a:hover{
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            padding: 10px;
+            background-color: #33bbcf;
+            border: none;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            border-radius: 0.5rem;
+            font-family: arial;
+            border: 1px solid #33bbcf;
         }
 </style>
 <head>
@@ -36,6 +60,7 @@
     </style>
 </head>
 <body>
+    <p class='layout'>
     <h1>List of customers</h1>
     <table>
         <thead>
@@ -54,15 +79,16 @@
                     <td>{{ customer['first_name'] }}</td>
                     <td>{{ customer['last_name'] }}</td>
                     <td>{{ customer['email'] }}</td>
-                    <td>{{ customer['file_name'][:-4] }}</td>
+                    <td>{{ customer['file_name'][20:-4] }}</td>
                     <td>{{ customer['current_balance'] }}</td>
                     <td>{{ customer['savings_balance'] }}</td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
+</p>
 </body>
 
-<a class="redirect-button" href="/bankerview">Return to Banker Employee View Page</a>
+<span class="button"><a href="/bankerview">Return to Banker Employee View Page</a></span>
 
 {% endblock content %}

@@ -1,0 +1,53 @@
+<head>
+  <style>
+.center-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Ajustez la hauteur selon vos besoins */
+}
+
+
+.invalid-feedback span {
+    color: red;
+    font-weight: bold;
+}
+</style>
+</head>
+{% extends "layout.html" %}
+{% block content %}
+<div class = "container messages-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+             {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                   {{ message }}
+                </div>
+             {% endfor %}
+          {% endif %}
+    {% endwith %}
+</div>
+<div class="center-container">
+<form method='POST', action="">
+               {{ form.hidden_tag() }}
+            <fieldset class="form-group">
+         <div class="form-group">
+          {{ form.email.label(class="form-control-label") }}
+                  {% if form.email.errors %}
+                {{ form.email(class='form-control form-control-lg is-invalid') }}
+                <div class="invalid-feedback">
+                    {% for error in form.email.errors %}
+                    <span> {{ error }} </span>
+                    {% endfor %}
+                </div>
+                   {% else %}
+                {{ form.email(class="form-control form-control-lg") }}
+           {% endif %}
+         </div>
+         <div class="from-group" style="margin-bottom: 20px;">
+        {{ form.submit(class="btn btn-outline-info") }}
+         </div>
+     </fieldset>
+ </form>
+</div>
+{%endblock%}

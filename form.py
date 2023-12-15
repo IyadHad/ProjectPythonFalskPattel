@@ -54,8 +54,13 @@ class customer():
 	def tostring(self):
 		return f"{self.first_name}-{self.last_name}-{self.email}-{self.password}-{self.current}-{self.savings}"
 	
+
 class BankerCreate(FlaskForm):
 	first_name = StringField('First Name', validators = [DataRequired(), Length(min=3, max=25)])
 	last_name = StringField('Last Name', validators = [DataRequired(), Length(min=3, max=25)])
 	email = StringField('Email', validators = [DataRequired(), Email()])
 	submit = SubmitField('Create')
+
+class BankerActions(FlaskForm):
+	email = StringField('Email', validators = [DataRequired(), Email()])
+	submit = SubmitField('Go to that account')

@@ -1,14 +1,12 @@
-from flask import Flask, render_template, url_for,request,redirect,flash, jsonify, Response,stream_with_context
-from form import RegistrationForm,LoginForm, BankerlogForm,customer,BankerCreate
-import os
+from flask import Flask, render_template, url_for, request, flash, redirect, jsonify, Response
+from form import RegistrationForm, LoginForm, BankerlogForm, customer, BankerCreate, BankerActions
 import pandas as pd
+import os
 alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
-app = Flask(__name__,template_folder='ProjectTemplate',static_folder='static')
-import secrets
-import time
 
-a = str(secrets.token_hex(16))
-app.config['SECRET_KEY']=a
+app = Flask(__name__, template_folder='ProjectTemplate', static_folder='static')
+
+app.config['SECRET_KEY']='6c4448ffb775aa1831b04ef0a9a1b4df'
 
 @app.route("/")
 @app.route("/Home")
@@ -84,7 +82,7 @@ def register():
         last_name = request.form.get('last_name')
         email = request.form.get('email')
         password = request.form.get('password')
-        save_to_file(first_name, last_name, email,password)	
+        save_to_file(first_name, last_name, email,password) 
         Create_Perso_File_Customer(first_name, last_name, email,password)
         flash(f'Account created for {reg_form.first_name.data}!', 'success')
         return redirect(url_for('CustomerviewPage'))
@@ -108,7 +106,7 @@ def login():
                 return redirect(url_for(f'CustomerviewPage',customer_associate=customer_associate.tostring()))
         else:
             flash('Login Unsuccessful. Please check username and password.', 'danger')
-    return render_template('loginCustomer.html', title='Login Customer', form=log_form)
+    return render_template('login.html', title='Login Customer', form=log_form)
 
 @app.route("/bankerLog",methods=['GET', 'POST'])
 def LoginBankerPage():
@@ -149,7 +147,9 @@ def CustomerviewPage(customer_associate):
             deposit(account_type, amount,customer_associate.first_name,customer_associate.last_name)
             flash(f'Deposited {amount} into {account_type} account', 'success')
 
-    return render_template('CustomerView.html',customer_associate=customer_associate)
+    accounts=load_accounts(customer_associate.first_name, customer_associate.last_name)
+
+    return render_template('CustomerView.html',customer_associate=customer_associate, accounts=accounts)
 
 def load_accounts(first_name,last_name):
     file_path = 'static/FileCustomer/customer.txt'
@@ -168,31 +168,23 @@ def load_accounts(first_name,last_name):
     return accounts
 
 
-def save_accounts(accounts,first_name,last_name):
+def save_accounts(accounts, first_name, last_name):
     file_path = 'static/FileCustomer/customer.txt'
+    updated_lines = []
+
     with open(file_path, 'r') as file:
-            lines = file.readlines()
-            with open(file_path, 'w') as writer:
-                pass
-            for line in lines:
-                l = line.split(',')
-                if l[0]== first_name and l[1]==last_name:
-                    l[len(l)-2]=accounts['current']
-                    l[len(l)-1]=accounts['savings']
-                    with open(file_path, 'a') as writer:
-                        for element in l:
-                            if l[-1]!=element:
-                                writer.writelines(f"{element},")
-                            else:
-                                writer.writelines(f"{element}\n")
-                else:
-                    with open(file_path, 'a') as writer:
-                        for element in l:
-                                if l[-1]!=element:
-                                    writer.writelines(f"{element},")
-                                else:
-                                    writer.writelines(f"{element}\n")
-                        break
+        lines = file.readlines()
+
+    for line in lines:
+        l = line.strip().split(',')
+        if l[0] == first_name and l[1] == last_name:
+            l[-2] = str(accounts['current'])
+            l[-1] = str(accounts['savings'])
+        updated_lines.append(','.join(l) + '\n')
+
+    with open(file_path, 'w') as writer:
+        writer.writelines(updated_lines)
+
 
 #a,a,a@gmail.com,a,0.0,0.0
 def withdraw(account_type, amount,first_name,last_name):
@@ -329,6 +321,53 @@ def delete_customer_from_file(email):
     with open('static\FileCustomer\customer.txt', 'w') as file:
         file.writelines(lines_to_keep)
 
+@app.route('/')
+@app.route('/bankerActions', methods=['GET', 'POST'])
+def bankerActions():
+    action_form = BankerActions()
+    file_path = 'static\FileCustomer\customer.txt'
+    custumer_list = txtToListe(file_path)
+    boolean = False
+    if action_form.validate_on_submit():
+        for i in custumer_list:
+            if action_form.email.data == i.get_email():
+                customer_associate = customer(i.get_first_name(),i.get_last_name(),i.get_email(),i.get_password(),i.current,i.savings)
+                boolean =True
+                break
+        if boolean==True:
+                flash('You can now see the accounts of this customer', 'success')
+                print(isinstance(customer_associate,customer))
+                return redirect(url_for(f'actions',customer_associate=customer_associate.tostring()))
+        else:
+            flash('This email adress does not exist', 'danger')
+    return render_template('bankerActions.html', title='Make a deposit/Withdraw money', form=action_form)
+
+@app.route('/actions/<customer_associate>', methods=['GET', 'POST'])
+def actions(customer_associate):
+    a = customer_associate.split('-')
+    customer_associate = customer(a[0],a[1],a[2],a[3],a[4],a[5])
+    if request.method == 'POST':
+        action = request.form.get('action')
+        account_type = request.form.get('account_type')
+        amount = float(request.form.get('amount'))
+        print(amount)
+        if account_type not in ('current', 'savings'):
+            flash('Invalid account type', 'danger')
+            return redirect(url_for('actions'))
+
+        if action == 'withdraw':
+            success, message = withdraw(account_type, amount,customer_associate.first_name,customer_associate.last_name)
+            if not success:
+                flash(message, 'danger')
+            else:
+                flash(message, 'success')
+        elif action == 'deposit':
+            deposit(account_type, amount,customer_associate.first_name,customer_associate.last_name)
+            flash(f'Deposited {amount} into {account_type} account', 'success')
+
+    accounts=load_accounts(customer_associate.first_name, customer_associate.last_name)
+
+    return render_template('actions.html',customer_associate=customer_associate, accounts=accounts)
 
 if __name__ == '__main__':
-	app.run(debug=True)
+    app.run(debug=True)

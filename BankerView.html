@@ -20,6 +20,11 @@
             text-align: center;
         }
 
+        h1 {
+            margin-top: 20px; /* Ajustez cette valeur selon vos besoins */
+            margin-bottom: 20px;
+        }
+
         ul {
             list-style: none;
             padding: 0;
@@ -27,24 +32,46 @@
             justify-content: center;
         }
 
-        li {
-            margin: 0 10px; /* Ajustez la marge entre les éléments selon vos besoins */
-            border: 1px solid #ccc; /* Bordure autour des boutons */
+        .button a{
+            background-color: white;
+            border: none;
+            color: #33bbcf;
             padding: 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            border-radius: 0.5rem;
+            text-transform: uppercase;
+            font-family: arial;
+            border: 1px solid #33bbcf;
         }
 
-        li a {
+        .button a:hover{
+            background-color: #33bbcf;
+            border: none;
+            color: white;
+            padding: 10px;
+            text-align: center;
             text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            border-radius: 0.5rem;
+            text-transform: uppercase;
+            font-family: arial;
+            border: 1px solid #33bbcf;
         }
     </style>
 </head>
 <body>
     <h1>Bank Employee View</h1>
     <ul>
-        <li><a href="/listCustomer">List of customers</a></li>
-        <li><a href="/createCustomer">Add a customer</a></li>
-        <li><a href="/deleteCustomers">Delete customers with balance at 0</a></li>
-        <li><a href="/ajouter_enlever_argent">Make a deposit/Withdraw money</a></li>
+        <li><span class="button"><a href="/listCustomer">List of customers</a></li></span>
+        <li><span class="button"><a href="/createCustomer">Add a customer</a></li></span>
+        <li><span class="button"><a href="/deleteCustomers">Delete customers with balance at 0</a></li></span>
+        <li><span class="button"><a href="/bankerActions">Make a deposit/Withdraw money</a></li></span>
     </ul>
 </body>
  
